@@ -11,6 +11,9 @@ function App() {
   const [addedProducts, setAddedProducts] = useState([]);
 
   const updateProductQuantity = (name, quantity) => {
+    if (quantity < 1 || isNaN(quantity)) {
+      return;
+    }
     setAddedProducts((curr) =>
       curr.map((product) =>
         product.name === name ? { ...product, quantity } : product
@@ -60,7 +63,17 @@ function App() {
               <li key={i}>
                 <p>Nome: {product.name}</p>
                 <p>Prezzo: {product.price.toFixed(2)}€</p>
-                <p>Quantità: {product.quantity}</p>{" "}
+                <p>Quantità: {product.quantity}</p>
+                <input
+                  type="number"
+                  value={product.quantity}
+                  onChange={(e) =>
+                    updateProductQuantity(
+                      product.name,
+                      parseInt(e.target.value)
+                    )
+                  }
+                />
                 <button onClick={() => removeFromCart(product)}>
                   Rimuovi dal carrello
                 </button>
