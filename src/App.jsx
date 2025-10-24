@@ -1,13 +1,4 @@
-import { useState, useReducer } from "react";
-
-const shoppingListReducer = (shoppingList, action) => {
-  switch (action.type) {
-    case "ADD_ITEM":
-      return [...shoppingList, action.payload];
-    default:
-      return shoppingList;
-  }
-};
+import { useState } from "react";
 
 function App() {
   const products = [
@@ -17,49 +8,68 @@ function App() {
     { name: "Pasta", price: 0.7 },
   ];
 
-  const [shoppingList] = useReducer(shoppingListReducer, products);
-
   const [addedProducts, setAddedProducts] = useState([]);
 
-  const addToCart = (product) => {
-    const isAlreadyAdded = addedProducts.some((p) => p.name === product.name);
-
-    if (!isAlreadyAdded) {
-      setAddedProducts([...addedProducts, { ...product, quantity: 1 }]);
-    }
+  const updateProductQuantity = (name, quantity) => {
+    setAddedProducts((curr) =>
+      curr.map((product) =>
+        product.name === name ? { ...product, quantity } : product
+      )
+    );
   };
+
+  const addToCart = (product) => {
+    const addedProduct = addedProducts.find((p) => p.name === product.name);
+    if (addedProduct) {
+      updateProductQuantity(addedProduct.name, addedProduct.quantity + 1);
+      return;
+    }
+    setAddedProducts((curr) => [...curr, { ...product, quantity: 1 }]);
+  };
+
+  const removeFromCart = (product) => {
+    setAddedProducts((curr) => curr.filter((p) => p.name !== product.name));
+  };
+
+  const totalToPay = addedProducts.reduce(
+    (acc, p) => acc + p.price * p.quantity,
+    0
+  );
 
   return (
     <>
       <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
         <h1>Lista dei prodotti</h1>
         <ul>
-          {shoppingList.map((product) => (
+          {products.map((product) => (
             <li key={product.name} style={{ marginBottom: "10px" }}>
               <p>Nome: {product.name}</p>
-              <p>Prezzo: {product.price}€</p>
+              <p>Prezzo: {product.price.toFixed(2)}€</p>
               <button onClick={() => addToCart(product)}>
                 Aggiungi al carrello
               </button>
             </li>
           ))}
         </ul>
-
-        {addedProducts.length > 0 && (
-          <>
-            <h2>Carrello</h2>
-            <ul>
-              {addedProducts.map((item) => (
-                <li key={item.name}>
-                  <p>Nome: {item.name}</p>
-                  <p>Prezzo: {item.price}€</p>
-                  <p>Quantità: {item.quantity}</p>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
       </div>
+      {addedProducts.length > 0 && (
+        <div>
+          <h2>Carrello</h2>
+          <ul>
+            {addedProducts.map((product, i) => (
+              <li key={i}>
+                <p>Nome: {product.name}</p>
+                <p>Prezzo: {product.price.toFixed(2)}€</p>
+                <p>Quantità: {product.quantity}</p>{" "}
+                <button onClick={() => removeFromCart(product)}>
+                  Rimuovi dal carrello
+                </button>
+              </li>
+            ))}
+          </ul>
+          <h3>Totale da pagare: {totalToPay.toFixed(2)}€</h3>
+        </div>
+      )}
     </>
   );
 }
